@@ -1,33 +1,61 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const groq = process.env.GROQ_API_KEY ? new Groq({ apiKey: process.env.GROQ_API_KEY }) : null;
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
-const geminiModel = genAI ? genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }) : null;
+const apiKey = process.env.GROQ_API_KEY;
+if (!apiKey) {
+  throw new Error('GROQ_API_KEY is not defined in the backend environment variables! Please configure it in your .env file.');
+}
+const groq = new Groq({ apiKey });
 
-// API adapter to support both Groq (Llama 3.3 70B) and Gemini
+// Helper to call Groq with automatic model fallback on rate limits (429)
+async function createChatCompletionWithFallback(options: any) {
+  const models = [
+    'llama-3.3-70b-versatile',
+    'mixtral-8x7b-32768',
+    'gemma2-9b-it',
+    'llama-3.1-8b-instant'
+  ];
+  
+  let lastError: any = null;
+  for (const modelName of models) {
+    try {
+      console.log(`[LLM Fallback] Attempting generation with model: ${modelName}`);
+      const completion = await groq.chat.completions.create({
+        ...options,
+        model: modelName
+      });
+      console.log(`[LLM Fallback] SUCCESS using model: ${modelName}`);
+      return completion;
+    } catch (err: any) {
+      lastError = err;
+      const isRateLimit = err.status === 429 || err.message?.includes('rate_limit') || err.message?.includes('Limit') || err.message?.includes('quota');
+      const isModelError = err.status === 400 || err.status === 404;
+      if (isRateLimit || isModelError) {
+        console.warn(`[LLM Fallback] Model ${modelName} failed (status ${err.status}). Reason: ${err.message}. Retrying next fallback...`);
+        continue;
+      }
+      // For critical errors (e.g. invalid credentials), fail immediately
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
+// 100% Groq API Adapter (Llama 3.3 70B with fallback support) — Completely decoupled from Gemini
 export const model = {
   async generateContent(prompt: string) {
-    if (groq) {
-      const completion = await groq.chat.completions.create({
-        messages: [{ role: 'user', content: prompt }],
-        model: 'llama-3.3-70b-versatile',
-      });
-      const text = completion.choices[0]?.message?.content || '';
-      return {
-        response: {
-          text: () => text
-        }
-      };
-    }
-    
-    if (geminiModel) {
-      return await geminiModel.generateContent(prompt);
-    }
-    
-    throw new Error('No LLM Provider API Key found in .env (either GEMINI_API_KEY or GROQ_API_KEY must be provided)');
+    const isJson = prompt.toLowerCase().includes('json');
+    const completion = await createChatCompletionWithFallback({
+      messages: [{ role: 'user', content: prompt }],
+      ...(isJson ? { response_format: { type: 'json_object' } } : {})
+    });
+    const text = completion.choices[0]?.message?.content || '';
+    return {
+      response: {
+        text: () => text
+      }
+    };
   }
 };
 
@@ -51,21 +79,13 @@ Growth DNA — Innovation: ${b.growthDNA?.innovation}, Marketing: ${b.growthDNA?
 }
 
 export async function geminiChat(systemPrompt: string, userMessage: string): Promise<string> {
-  if (groq) {
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMessage }
-      ],
-      model: 'llama-3.3-70b-versatile',
-    });
-    return completion.choices[0]?.message?.content || '';
-  }
-
-  if (geminiModel) {
-    const result = await geminiModel.generateContent(`${systemPrompt}\n\n${userMessage}`);
-    return result.response.text();
-  }
-
-  throw new Error('No LLM Provider API Key found in .env');
+  const isJson = systemPrompt.toLowerCase().includes('json') || userMessage.toLowerCase().includes('json');
+  const completion = await createChatCompletionWithFallback({
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userMessage }
+    ],
+    ...(isJson ? { response_format: { type: 'json_object' } } : {})
+  });
+  return completion.choices[0]?.message?.content || '';
 }

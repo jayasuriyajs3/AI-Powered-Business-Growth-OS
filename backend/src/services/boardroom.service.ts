@@ -14,81 +14,72 @@ export const AGENTS = [
 
 const AGENT_PROMPTS: Record<string, (ctx: string, prev: string) => string> = {
   'Data Analyst': (ctx, _prev) => `
-You are the Data Analyst Agent for this company. Analyse the key metrics and give a sharp 2-3 sentence data-driven insight.
-Focus on: revenue trends, CAC vs LTV, conversion rate vs industry average, growth patterns.
-Be specific with numbers. No fluff. Start directly with your insight.
+You are the Data Analyst Agent. Analyze the metrics and give a sharp, data-driven insight.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly with your insight.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Marketing': (ctx, prev) => `
-You are the Marketing Agent. Based on the data analysis and business context, give your marketing recommendation in 2-3 sentences.
-Focus on: channel performance, CAC reduction, campaign effectiveness, budget allocation.
-Previous agent said: "${prev}"
-Respond naturally as if in a boardroom. Start with your stance directly.
+You are the Marketing Agent. Based on the preceding discussion, give your recommendation.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
+Previous agent discussed: "${prev}"
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Sales': (ctx, prev) => `
-You are the Sales Agent. Analyse the sales pipeline and give your recommendation in 2-3 sentences.
-Focus on: lead quality, conversion improvements, upsell/cross-sell, pipeline health.
-Previous agents discussed: "${prev}"
-Be direct and number-focused. Start immediately with your point.
+You are the Sales Agent. Give your customer pipeline recommendation.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
+Previous discussion: "${prev}"
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Finance': (ctx, prev) => `
-You are the Finance Agent. You are conservative and data-driven. Assess the financial health and challenge risky proposals in 2-3 sentences.
-Focus on: cash runway, profit margins, ROI of proposed actions, financial risk.
+You are the Finance Agent. Assess the financial health and challenge any risky spend proposals.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
 Previous discussion: "${prev}"
-Be firm about financial constraints. Start directly.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Operations': (ctx, prev) => `
-You are the Operations Agent. Assess execution feasibility and team capacity in 2-3 sentences.
-Focus on: team bandwidth, process bottlenecks, execution risk, resource constraints.
+You are the Operations Agent. Assess team feasibility and project execution limits.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
 Previous discussion: "${prev}"
-Be practical. Start directly.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Customer Success': (ctx, prev) => `
-You are the Customer Success Agent. Analyse retention and customer health in 2-3 sentences.
-Focus on: churn risk, NPS trends, at-risk accounts, retention opportunities.
+You are the Customer Success Agent. Focus on customer retention and churn.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
 Previous discussion: "${prev}"
-Be empathetic but data-backed. Start directly.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Innovation': (ctx, prev) => `
-You are the Innovation Agent. Identify market opportunities and competitive threats in 2-3 sentences.
-Focus on: competitor weaknesses, untapped segments, emerging trends, new revenue streams.
+You are the Innovation Agent. Focus on competitor gaps and differentiation.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
 Previous discussion: "${prev}"
-Be forward-thinking and bold. Start directly.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'Strategy': (ctx, prev) => `
-You are the Strategy Agent. Synthesise the discussion and recommend the 30-day priority in 2-3 sentences.
-Focus on: strategic priorities, resource allocation, risk-adjusted growth path.
+You are the Strategy Agent. Synthesize the debate into a single priority focus.
+CRITICAL: Keep your response under 35 words (strictly 1-2 sentences). Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly.
 Previous discussion: "${prev}"
-Be decisive and structured. Start directly.
 
 BUSINESS CONTEXT:
 ${ctx}`,
 
   'CEO': (ctx, prev) => `
-You are the CEO Agent — the final decision maker. Based on the full boardroom discussion, give your final decision in 3-4 sentences.
-You must: acknowledge key concerns, make a clear decision, state 2-3 specific actions to take immediately.
+You are the CEO Agent. Make the final authoritative decision based on the debate.
+CRITICAL: Give your final decision in exactly 2-3 sentences. Do NOT use any Markdown formatting, bold stars (**), bullet lists, or asterisks (*). Start directly with "[FINAL DECISION]".
 Full discussion: "${prev}"
-Start with "[FINAL DECISION]" and be authoritative.
 
 BUSINESS CONTEXT:
 ${ctx}`,
@@ -107,7 +98,15 @@ export async function* runBoardroom(business: any): AsyncGenerator<{
 
     try {
       const result = await model.generateContent(prompt);
-      const message = result.response.text().trim();
+      let message = result.response.text().trim();
+      
+      // Clean up any remaining asterisks (*) or markdown bullet point dash (- ) prefixes
+      message = message
+        .replace(/\*/g, '')
+        .replace(/^- /g, '')
+        .replace(/^CEO Agent:\s*/i, '') // strip redundant prefixes if model repeats name
+        .trim();
+
       conversationHistory += `\n${agent.name}: ${message}`;
       messages.push({ agent: agent.name, message });
 
@@ -116,7 +115,7 @@ export async function* runBoardroom(business: any): AsyncGenerator<{
       // Small delay between agents for streaming effect
       await new Promise(r => setTimeout(r, 300));
     } catch (err) {
-      const fallback = `Analysing ${business.companyName}'s data and aligning with strategic priorities.`;
+      const fallback = `Analyzing ${business.companyName}'s data to align operations with strategy.`;
       yield { agent: agent.name, emoji: agent.emoji, color: agent.color, message: fallback };
     }
   }
@@ -124,13 +123,14 @@ export async function* runBoardroom(business: any): AsyncGenerator<{
   // Generate votes from all agents except CEO
   for (const agent of AGENTS.slice(0, 8)) {
     const votePrompt = `
-Based on this boardroom discussion about ${business.companyName}, as the ${agent.name} Agent, cast your vote.
+Based on this boardroom discussion about ${business.companyName}, as the ${agent.name} Agent, cast your vote on the final CEO proposal.
 Discussion: "${conversationHistory}"
-Respond in JSON only: {"vote": "YES" or "NO", "confidence": <number 60-99>, "reason": "<one sentence reason>"}
+Respond in JSON only (do NOT output markdown backticks): {"vote": "YES" or "NO", "confidence": <number 60-99>, "reason": "<one sentence reason under 15 words, no asterisks>"}
 `;
     try {
       const result = await model.generateContent(votePrompt);
-      const text = result.response.text().trim().replace(/```json|```/g, '');
+      let text = result.response.text().trim();
+      text = text.replace(/```json|```/g, '').replace(/\*/g, '').trim();
       const parsed = JSON.parse(text);
       yield {
         agent: agent.name,
@@ -138,9 +138,9 @@ Respond in JSON only: {"vote": "YES" or "NO", "confidence": <number 60-99>, "rea
         color: agent.color,
         message: '',
         isVote: true,
-        vote: parsed.vote,
-        confidence: parsed.confidence,
-        reason: parsed.reason,
+        vote: parsed.vote || 'YES',
+        confidence: parsed.confidence || 80,
+        reason: (parsed.reason || 'Aligned with strategic goals.').replace(/\*/g, ''),
       };
     } catch {
       yield {

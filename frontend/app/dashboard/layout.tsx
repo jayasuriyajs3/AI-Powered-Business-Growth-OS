@@ -15,7 +15,8 @@ import {
   Bot, 
   AlertTriangle,
   LogOut,
-  Rocket
+  Rocket,
+  Settings
 } from 'lucide-react';
 
 const navItems = [
@@ -30,6 +31,7 @@ const navItems = [
   { href: '/dashboard/opportunity', icon: Radar, label: 'Radar' },
   { href: '/dashboard/copilot', icon: Bot, label: 'Copilot' },
   { href: '/dashboard/crisis', icon: AlertTriangle, label: 'Crisis' },
+  { href: '/dashboard/settings', icon: Settings, label: 'Profile Settings' },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

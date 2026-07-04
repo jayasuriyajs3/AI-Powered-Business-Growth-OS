@@ -36,6 +36,16 @@ export interface IBusiness extends Document {
     label: string;
     narrative: string;
   };
+  analysis?: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+    keyInsight: string;
+    immediatePriority: string;
+  };
+  morningBrief?: any;
+  morningBriefUpdatedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +87,16 @@ const BusinessSchema = new Schema<IBusiness>(
       label: { type: String, default: '' },
       narrative: { type: String, default: '' },
     },
+    analysis: {
+      strengths: [{ type: String }],
+      weaknesses: [{ type: String }],
+      opportunities: [{ type: String }],
+      threats: [{ type: String }],
+      keyInsight: { type: String },
+      immediatePriority: { type: String }
+    },
+    morningBrief: { type: Schema.Types.Mixed },
+    morningBriefUpdatedAt: { type: Date }
   },
   { timestamps: true }
 );

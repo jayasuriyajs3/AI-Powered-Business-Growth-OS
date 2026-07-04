@@ -39,6 +39,21 @@ router.get('/morning-brief/:businessId', async (req: Request, res: Response) => 
     const business = await Business.findById(req.params.businessId);
     if (!business) return res.status(404).json({ success: false, error: 'Not found' });
 
+    // Check if we have a cached morning brief generated *today*
+    if (business.morningBrief && business.morningBriefUpdatedAt) {
+      const lastUpdated = new Date(business.morningBriefUpdatedAt);
+      const now = new Date();
+      const isSameDay = 
+        lastUpdated.getDate() === now.getDate() &&
+        lastUpdated.getMonth() === now.getMonth() &&
+        lastUpdated.getFullYear() === now.getFullYear();
+
+      if (isSameDay) {
+        res.json({ success: true, brief: business.morningBrief });
+        return;
+      }
+    }
+
     const ctx = buildContext(business);
     const lastSession = await Session.findOne({ businessId: req.params.businessId }).sort({ createdAt: -1 });
 
@@ -72,6 +87,12 @@ Respond in this exact JSON format:
     const raw = await geminiChat('', prompt);
     const cleaned = raw.replace(/```json|```/g, '').trim();
     const brief = JSON.parse(cleaned);
+
+    // Save/cache brief in database
+    business.morningBrief = brief;
+    business.morningBriefUpdatedAt = new Date();
+    await business.save();
+
     res.json({ success: true, brief });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
