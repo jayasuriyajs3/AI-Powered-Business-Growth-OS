@@ -99,8 +99,8 @@ export default function CopilotPage() {
             >
               {m.role === 'ai' && (
                 <div 
-                  className="w-8 h-8 bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0"
-                  style={{ borderRadius: '50%' }}
+                  className="bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0"
+                  style={{ width: '32px', height: '32px', alignSelf: 'flex-start', borderRadius: '50%' }}
                 >
                   <Bot size={16} className="text-indigo-400" />
                 </div>
@@ -126,7 +126,7 @@ export default function CopilotPage() {
 
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0" style={{ borderRadius: '50%' }}>
+            <div className="bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0" style={{ width: '32px', height: '32px', alignSelf: 'flex-start', borderRadius: '50%' }}>
               <Bot size={16} className="text-indigo-400" />
             </div>
             <div className="glass p-3.5 rounded-xl flex gap-1.5 items-center" style={{ borderTopLeftRadius: '0px' }}>

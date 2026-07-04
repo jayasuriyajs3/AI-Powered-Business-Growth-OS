@@ -179,8 +179,11 @@ export default function BoardroomPage() {
                     }}
                   >
                     <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                      className="rounded-full flex items-center justify-center shrink-0"
                       style={{ 
+                        width: '40px',
+                        height: '40px',
+                        alignSelf: 'flex-start',
                         background: (msg.color || '#6366F1') + '15', 
                         border: `1.5px solid ${msg.color || '#6366F1'}`,
                         borderRadius: '50%',
@@ -207,7 +210,7 @@ export default function BoardroomPage() {
 
             {running && messages.length > 0 && (
               <div className="flex gap-4 p-4 glass" style={{ background: 'rgba(13, 20, 38, 0.35)', borderLeftColor: 'rgba(99,102,241,0.2)' }}>
-                <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0" style={{ borderRadius: '50%' }}>
+                <div className="rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shrink-0" style={{ width: '40px', height: '40px', alignSelf: 'flex-start', borderRadius: '50%' }}>
                   <Bot size={18} className="text-indigo-400 animate-pulse" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-3">

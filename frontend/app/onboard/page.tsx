@@ -142,8 +142,10 @@ export default function OnboardPage() {
       <div className="flex items-center gap-3 mb-8">
         {steps.map((s, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className={`w-8 h-8 flex items-center justify-center text-sm font-bold transition-all`}
+            <div className="flex items-center justify-center text-sm font-bold transition-all shrink-0"
               style={{
+                width: '32px',
+                height: '32px',
                 borderRadius: '50%',
                 background: i < step ? 'var(--success)' : i === step ? 'var(--primary)' : 'rgba(31, 41, 55, 0.6)',
                 color: '#ffffff',
