@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { copilotAPI } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Bot, MessageSquare, Send } from 'lucide-react';
 
 const SUGGESTIONS = [
   'Why is my conversion rate dropping?',
@@ -39,9 +40,12 @@ export default function CopilotPage() {
   return (
     <div className="p-6 flex flex-col mx-auto" style={{ height: '100%', maxWidth: '800px', maxHeight: '100vh', overflow: 'hidden' }}>
       {/* Header */}
-      <div className="mb-4 shrink-0">
-        <h1 className="text-2xl font-black text-white flex items-center gap-2">💬 AI Copilot</h1>
-        <p className="text-gray-400 text-sm mt-1">Context-aware advisor — trained on operational history of {businessName}</p>
+      <div className="mb-4 shrink-0 flex items-center gap-2.5">
+        <MessageSquare size={24} className="text-indigo-400" />
+        <div>
+          <h1 className="text-2xl font-black text-white">AI Copilot</h1>
+          <p className="text-gray-400 text-sm mt-1">Context-aware advisor — trained on operational history of {businessName}</p>
+        </div>
       </div>
 
       {/* Chat Messages Frame */}
@@ -57,7 +61,9 @@ export default function CopilotPage() {
       >
         {messages.length === 0 && (
           <div className="text-center py-10" style={{ margin: 'auto 0' }}>
-            <p className="text-5xl mb-4">🤖</p>
+            <div className="text-gray-500 mb-4 flex justify-center">
+              <Bot size={48} />
+            </div>
             <p className="text-gray-400 text-sm mb-6">Ask anything about financial trends, leads performance, or strategic options.</p>
             
             <div className="grid grid-cols-2 gap-3" style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -96,7 +102,7 @@ export default function CopilotPage() {
                   className="w-8 h-8 bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0"
                   style={{ borderRadius: '50%' }}
                 >
-                  🤖
+                  <Bot size={16} className="text-indigo-400" />
                 </div>
               )}
               <div 
@@ -120,12 +126,14 @@ export default function CopilotPage() {
 
         {loading && (
           <div className="flex gap-3">
-            <div className="w-8 h-8 bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center" style={{ borderRadius: '50%' }}>🤖</div>
+            <div className="w-8 h-8 bg-indigo-600/10 border border-indigo-600/30 rounded-full flex items-center justify-center shrink-0" style={{ borderRadius: '50%' }}>
+              <Bot size={16} className="text-indigo-400" />
+            </div>
             <div className="glass p-3.5 rounded-xl flex gap-1.5 items-center" style={{ borderTopLeftRadius: '0px' }}>
               {[0, 1, 2].map(i => (
                 <motion.div 
                   key={i} 
-                  className="w-2 h-2 bg-indigo-400" 
+                  className="w-2.5 h-2.5 bg-indigo-400" 
                   style={{ borderRadius: '50%' }}
                   animate={{ y: [-3, 0] }} 
                   transition={{ delay: i * 0.15, repeat: Infinity, repeatType: 'reverse', duration: 0.4 }} 
@@ -148,10 +156,11 @@ export default function CopilotPage() {
         <button 
           onClick={() => send(input)} 
           disabled={!input.trim() || loading} 
-          className="btn-primary"
+          className="btn-primary flex items-center gap-1.5"
           style={{ paddingLeft: '24px', paddingRight: '24px' }}
         >
-          Send
+          <span>Send</span>
+          <Send size={14} />
         </button>
       </div>
     </div>

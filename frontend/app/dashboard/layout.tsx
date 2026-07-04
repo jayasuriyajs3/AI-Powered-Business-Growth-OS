@@ -14,7 +14,8 @@ import {
   Radar, 
   Bot, 
   AlertTriangle,
-  LogOut
+  LogOut,
+  Rocket
 } from 'lucide-react';
 
 const navItems = [
@@ -43,7 +44,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo */}
         <div className="px-5 py-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center text-base font-bold text-white" style={{ width: '32px', height: '32px', background: 'var(--primary)', borderRadius: '8px' }}>🚀</div>
+            <div className="flex items-center justify-center text-white" style={{ width: '32px', height: '32px', background: 'var(--primary)', borderRadius: '8px' }}>
+              <Rocket size={16} />
+            </div>
             <div>
               <p className="font-bold text-sm text-white" style={{ letterSpacing: '0.5px' }}>GrowthOS AI</p>
               <p className="text-xs text-gray-500 font-medium">Executive OS</p>

@@ -14,7 +14,8 @@ import {
   TrendingDown,
   Activity,
   ThumbsUp,
-  Brain
+  Brain,
+  Zap
 } from 'lucide-react';
 
 const RISK_COLOR: Record<string, string> = { Low: 'text-green-400', Medium: 'text-yellow-400', High: 'text-red-400' };
@@ -71,7 +72,8 @@ export default function StrategyPage() {
             </>
           ) : (
             <>
-              ⚡ Generate Strategy
+              <Zap size={14} />
+              Generate Strategy
             </>
           )}
         </button>
@@ -119,7 +121,7 @@ export default function StrategyPage() {
               Overall Score: {activeScore.overall}/100
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+          <div className="grid grid-cols-2 gap-4">
             {[
               { label: 'Revenue Impact', value: activeScore.revenueImpact, color: '#10B981', icon: TrendingUp },
               { label: 'Expected ROI', value: activeScore.expectedROI, color: '#6366F1', icon: Coins },
@@ -130,16 +132,16 @@ export default function StrategyPage() {
             ].map((s, i) => {
               const ScoreIcon = s.icon;
               return (
-                <div key={i}>
-                  <div className="flex justify-between mb-1.5 items-center">
+                <div key={i} className="flex flex-col gap-1.5" style={{ padding: '2px 0' }}>
+                  <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400 flex items-center gap-1.5">
-                      <ScoreIcon size={12} className="text-gray-500" />
+                      <ScoreIcon size={14} className="text-gray-500" />
                       {s.label}
                     </span>
                     <span className="text-xs font-bold" style={{ color: s.color }}>{s.value}/100</span>
                   </div>
-                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-500" style={{ width: `${s.value}%`, background: s.color }}></div>
+                  <div className="progress-bar-container">
+                    <div className="progress-bar-fill" style={{ width: `${s.value}%`, background: s.color }}></div>
                   </div>
                 </div>
               );
