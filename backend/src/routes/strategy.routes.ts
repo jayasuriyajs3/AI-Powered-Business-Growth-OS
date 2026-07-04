@@ -13,10 +13,10 @@ router.post('/generate', async (req: Request, res: Response) => {
 
     const ctx = buildContext(business);
     const prompt = `You are the Strategy Agent for ${business.companyName}. Generate a detailed growth strategy.
-
+ 
 BUSINESS CONTEXT:
 ${ctx}
-
+ 
 Respond in this exact JSON format:
 {
   "plan30": [
@@ -40,14 +40,36 @@ Respond in this exact JSON format:
     {"action": "string", "owner": "string", "outcome": "string", "risk": "Low|Medium|High", "investment": "string"},
     {"action": "string", "owner": "string", "outcome": "string", "risk": "Low|Medium|High", "investment": "string"}
   ],
-  "scores": {
+  "score30": {
     "revenueImpact": <60-95>,
     "risk": <10-50>,
-    "difficulty": <30-70>,
-    "investment": <20-60>,
+    "difficulty": <20-50>,
+    "investment": <10-40>,
     "expectedROI": <70-95>,
+    "confidence": <75-95>,
+    "overall": <70-95>
+  },
+  "score90": {
+    "revenueImpact": <70-95>,
+    "risk": <20-60>,
+    "difficulty": <35-70>,
+    "investment": <25-65>,
+    "expectedROI": <75-95>,
     "confidence": <70-90>,
-    "overall": <65-90>
+    "overall": <68-92>
+  },
+  "score180": {
+    "revenueImpact": <80-99>,
+    "risk": <30-80>,
+    "difficulty": <50-90>,
+    "investment": <40-90>,
+    "expectedROI": <80-99>,
+    "confidence": <60-85>,
+    "overall": <65-88>
+  },
+  "recommendation": {
+    "bestPlan": "30-Day" | "90-Day" | "180-Day",
+    "reasoning": "string (explain why this plan is the most balanced fit for their cash runway, budget, and growth DNA)"
   }
 }`;
 
